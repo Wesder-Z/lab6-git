@@ -71,6 +71,8 @@ def test_chat_page_contains_websocket_client() -> None:
     assert "new WebSocket" in response.text
     assert "textContent" in response.text
     assert "/ws/chat" in response.text
+    assert 'id="send-button"' in response.text
+    assert "sendButton.disabled = false" in response.text
 
 
 def test_websocket_sends_validated_message() -> None:

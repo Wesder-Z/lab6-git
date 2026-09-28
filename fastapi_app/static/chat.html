@@ -41,7 +41,14 @@
                   autocomplete="off"
                   required
                 >
-                <button class="btn btn-primary" type="submit">Отправить</button>
+                <button
+                  id="send-button"
+                  class="btn btn-primary"
+                  type="submit"
+                  disabled
+                >
+                  Отправить
+                </button>
               </div>
             </div>
           </form>
@@ -57,15 +64,18 @@
       const form = document.querySelector("#chat-form");
       const status = document.querySelector("#status");
       const messages = document.querySelector("#messages");
+      const sendButton = document.querySelector("#send-button");
 
       socket.addEventListener("open", () => {
         status.textContent = "Подключено";
         status.className = "alert alert-success";
+        sendButton.disabled = false;
       });
 
       socket.addEventListener("close", () => {
         status.textContent = "Соединение закрыто";
         status.className = "alert alert-danger";
+        sendButton.disabled = true;
       });
 
       socket.addEventListener("message", (event) => {

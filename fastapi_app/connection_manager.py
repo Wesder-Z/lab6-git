@@ -1,6 +1,6 @@
 """Управление активными WebSocket-соединениями."""
 
-from fastapi import WebSocket
+from fastapi import WebSocket, WebSocketDisconnect
 
 
 class ConnectionManager:
@@ -34,7 +34,7 @@ class ConnectionManager:
         for connection in self._connections.copy():
             try:
                 await connection.send_json(message)
-            except RuntimeError:
+            except (RuntimeError, WebSocketDisconnect):
                 disconnected.append(connection)
 
         for connection in disconnected:
