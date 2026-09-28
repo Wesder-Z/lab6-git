@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Локальный WebSocket-чат</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    >
+  </head>
+  <body class="bg-light">
+    <main class="container py-5" style="max-width: 760px">
+      <section class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <h1 class="h3 mb-3">Локальный WebSocket-чат</h1>
+          <p id="status" class="alert alert-secondary" role="status">
+            Подключение...
+          </p>
+
+          <form id="chat-form" class="row g-3">
+            <div class="col-md-4">
+              <label for="author" class="form-label">Имя</label>
+              <input
+                id="author"
+                class="form-control"
+                minlength="2"
+                maxlength="30"
+                required
+              >
+            </div>
+            <div class="col-md-8">
+              <label for="message" class="form-label">Сообщение</label>
+              <div class="input-group">
+                <input
+                  id="message"
+                  class="form-control"
+                  maxlength="300"
+                  autocomplete="off"
+                  required
+                >
+                <button class="btn btn-primary" type="submit">Отправить</button>
+              </div>
+            </div>
+          </form>
+
+          <ul id="messages" class="list-group mt-4" aria-live="polite"></ul>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const protocol = location.protocol === "https:" ? "wss" : "ws";
+      const socket = new WebSocket(`${protocol}://${location.host}/ws/chat`);
+      const form = document.querySelector("#chat-form");
+      const status = document.querySelector("#status");
+      const messages = document.querySelector("#messages");
+
+      socket.addEventListener("open", () => {
+        status.textContent = "Подключено";
+        status.className = "alert alert-success";
+      });
+
+      socket.addEventListener("close", () => {
+        status.textContent = "Соединение закрыто";
+        status.className = "alert alert-danger";
+      });
+
+      socket.addEventListener("message", (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === "system" || data.type === "error") {
+          status.textContent = data.detail;
+          status.className = data.type === "error"
+            ? "alert alert-danger"
+            : "alert alert-success";
+          return;
+        }
+
+        const item = document.createElement("li");
+        item.className = "list-group-item";
+        const author = document.createElement("strong");
+        author.textContent = `${data.author}: `;
+        item.append(author, document.createTextNode(data.text));
+        messages.append(item);
+      });
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const author = document.querySelector("#author");
+        const message = document.querySelector("#message");
+        socket.send(JSON.stringify({author: author.value, text: message.value}));
+        message.value = "";
+        message.focus();
+      });
+    </script>
+  </body>
+</html>
